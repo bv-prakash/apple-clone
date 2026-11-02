@@ -227,6 +227,44 @@ async function loadEager(doc) {
 }
 
 /**
+ * Adds `in-view` to each element the first time it scrolls into view.
+ * The observer disconnects itself once every element has been revealed.
+ * @param {Element[]} elements
+ * @param {string} [rootMargin]
+ */
+export function revealOnScroll(elements, rootMargin = '0px 0px -10% 0px') {
+  const pending = elements.filter((el) => !el.classList.contains('in-view'));
+  if (!pending.length) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || !('IntersectionObserver' in window)) {
+    pending.forEach((el) => el.classList.add('in-view'));
+    return;
+  }
+  let remaining = pending.length;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('in-view');
+      observer.unobserve(entry.target);
+      remaining -= 1;
+      if (!remaining) observer.disconnect();
+    });
+  }, { rootMargin });
+  pending.forEach((el) => observer.observe(el));
+}
+
+/**
+ * Fades and slides default content up as it scrolls into view; blocks animate themselves.
+ * The first section is skipped so the LCP element is never hidden.
+ * @param {Element} main The main element
+ */
+function decorateReveal(main) {
+  const targets = [...main.querySelectorAll('.section:not(:first-child) > .default-content-wrapper')];
+  targets.forEach((el) => el.classList.add('reveal'));
+  revealOnScroll(targets);
+}
+
+/**
  * Loads everything that doesn't need to be delayed.
  * @param {Element} doc The container element
  */
@@ -234,6 +272,7 @@ async function loadLazy(doc) {
   loadHeader(doc.querySelector('body > header'));
 
   const main = doc.querySelector('main');
+  decorateReveal(main);
   await loadSections(main);
 
   const { hash } = window.location;

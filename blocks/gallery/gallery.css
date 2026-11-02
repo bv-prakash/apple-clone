@@ -1,0 +1,310 @@
+main > .section > .gallery-wrapper {
+  max-width: none;
+  padding: 0;
+}
+
+.gallery {
+  --slide-width: calc(100vw - 4.8rem);
+  --slide-gap: 1rem;
+
+  position: relative;
+  padding: 1.2rem 0 3.2rem;
+  overflow: hidden;
+  background-color: var(--color-surface-dark);
+  color: var(--color-text-on-dark);
+}
+
+.gallery .gallery-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.gallery .gallery-track {
+  display: flex;
+  gap: var(--slide-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: transform 1s var(--ease-out);
+  will-change: transform;
+}
+
+.gallery .gallery-track.no-transition {
+  transition: none;
+}
+
+.gallery .gallery-slide {
+  position: relative;
+  flex: 0 0 var(--slide-width);
+  overflow: hidden;
+  border-radius: var(--radius-tile);
+  cursor: pointer;
+}
+
+.gallery .gallery-slide.active {
+  cursor: default;
+}
+
+/* dim the peeking neighbours */
+.gallery .gallery-slide::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgb(0 0 0 / 50%);
+  transition: opacity 1s var(--ease-out);
+  pointer-events: none;
+}
+
+.gallery .gallery-slide.active::after {
+  opacity: 0;
+}
+
+.gallery .gallery-media,
+.gallery .gallery-media picture {
+  display: block;
+}
+
+.gallery .gallery-media img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  transform: scale(1.06);
+  transition: transform 6s linear;
+}
+
+.gallery .gallery-slide.active .gallery-media img {
+  transform: scale(1);
+}
+
+.gallery .gallery-caption {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 2.4rem;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(1.6rem);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+
+.gallery .gallery-slide.active .gallery-caption {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.45s;
+}
+
+.gallery .gallery-caption > * {
+  margin: 0;
+}
+
+.gallery .gallery-caption h2,
+.gallery .gallery-caption h3 {
+  font-size: 2.4rem;
+  line-height: 1.17;
+  letter-spacing: 0.009em;
+}
+
+.gallery .gallery-caption p {
+  font-size: 1.4rem;
+  line-height: 1.43;
+  color: #d2d2d7;
+}
+
+.gallery .gallery-caption .button-wrapper {
+  margin-top: 1.2rem;
+}
+
+.gallery .gallery-caption a.button {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.4rem;
+  background-color: #fff;
+  border-color: #fff;
+  color: #1d1d1f;
+}
+
+.gallery .gallery-caption a.button:hover,
+.gallery .gallery-caption a.button:focus-visible {
+  background-color: #e8e8ed;
+  border-color: #e8e8ed;
+}
+
+/* dots + play/pause */
+.gallery .gallery-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  margin-top: 2.4rem;
+}
+
+.gallery .gallery-dots {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.4rem 2rem;
+  border-radius: var(--radius-pill);
+  background-color: rgb(66 66 69 / 72%);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+.gallery .gallery-dot {
+  position: relative;
+  width: 0.8rem;
+  height: 0.8rem;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: rgb(255 255 255 / 42%);
+  cursor: pointer;
+  transition: width 0.4s var(--ease-out), background-color 0.4s var(--ease-out);
+}
+
+.gallery .gallery-dot:hover {
+  background-color: rgb(255 255 255 / 64%);
+}
+
+.gallery .gallery-dot.active {
+  width: 4.8rem;
+}
+
+.gallery:not(.playing) .gallery-dot.active {
+  background-color: #fff;
+}
+
+/* progress fill on the active dot while playing */
+.gallery .gallery-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: #fff;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.gallery .gallery-dot.active.progress::after {
+  animation: gallery-progress 5s linear forwards;
+}
+
+@keyframes gallery-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.gallery .gallery-toggle {
+  position: relative;
+  width: 4.4rem;
+  height: 4.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgb(66 66 69 / 72%);
+  backdrop-filter: saturate(180%) blur(20px);
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease-out);
+}
+
+.gallery .gallery-toggle:hover {
+  background-color: rgb(86 86 89 / 80%);
+}
+
+/* pause glyph: two bars */
+.gallery .gallery-toggle::before,
+.gallery .gallery-toggle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 0.4rem;
+  height: 1.4rem;
+  border-radius: 0.2rem;
+  background-color: #fff;
+  transform: translateY(-50%);
+}
+
+.gallery .gallery-toggle::before {
+  left: calc(50% - 0.6rem);
+}
+
+.gallery .gallery-toggle::after {
+  left: calc(50% + 0.2rem);
+}
+
+/* play glyph: triangle */
+.gallery .gallery-toggle.paused::before {
+  left: calc(50% - 0.4rem);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.8rem 0 0.8rem 1.3rem;
+  border-color: transparent transparent transparent #fff;
+  border-radius: 0;
+  background: none;
+}
+
+.gallery .gallery-toggle.paused::after {
+  display: none;
+}
+
+.gallery button:focus-visible {
+  outline: 2px solid var(--color-link-on-dark);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery .gallery-track,
+  .gallery .gallery-media img,
+  .gallery .gallery-caption {
+    transition: none;
+  }
+}
+
+@media (min-width: 735px) {
+  .gallery {
+    --slide-width: 87.5vw;
+    --slide-gap: 1.6rem;
+  }
+
+  .gallery .gallery-media img {
+    aspect-ratio: 16 / 9;
+  }
+
+  .gallery .gallery-caption {
+    flex-flow: row wrap;
+    align-items: center;
+    column-gap: 1.6rem;
+    padding: 3.2rem 4rem;
+  }
+
+  .gallery .gallery-caption h2,
+  .gallery .gallery-caption h3 {
+    flex-basis: 100%;
+    font-size: 3.2rem;
+  }
+
+  .gallery .gallery-caption .button-wrapper {
+    margin-top: 0;
+  }
+
+  .gallery .gallery-caption p {
+    font-size: 1.7rem;
+  }
+
+  .gallery .gallery-caption a.button {
+    padding: 1.1rem 2.1rem;
+    font-size: 1.7rem;
+  }
+}
+
+@media (min-width: 1069px) {
+  .gallery {
+    --slide-width: min(87.5vw, 125rem);
+    --slide-gap: 2rem;
+  }
+}

@@ -88,7 +88,7 @@
   --spacing-huge: 120px;
   --spacing-xhuge: 144px;
   --spacing-xxhuge: 192px;
-  --type-base-font-family: adobe-clean, roboto, roboto-fallback, system-ui, sans-serif;
+  --type-base-font-family: inter, inter-fallback, system-ui, -apple-system, "Helvetica Neue", helvetica, arial, sans-serif;
   --type-display-1-font: normal normal 300 6rem/7.2rem var(--type-base-font-family);
   --type-display-1-letter-spacing: 0.04em;
   --type-display-2-font: normal normal 300 4.8rem/5.6rem var(--type-base-font-family);
@@ -124,13 +124,54 @@
   --type-details-overline-font: normal normal 400 1.2rem/2rem var(--type-base-font-family);
   --type-details-overline-letter-spacing: 0.16em;
 
+  /* Showcase design tokens */
+  --color-text: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-text-on-dark: #f5f5f7;
+  --color-surface-light: #f5f5f7;
+  --color-surface-dark: #000;
+  --color-link: #06c;
+  --color-link-on-dark: #2997ff;
+  --color-action: #0071e3;
+  --color-action-hover: #0077ed;
+  --color-hairline: #d2d2d7;
+  --radius-pill: 980px;
+  --radius-tile: 18px;
+  --ease-out: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --type-body-size: 1.7rem;
+  --type-body-line-height: 1.4706;
+  --type-body-tracking: -0.022em;
+  --type-hero-size: 4rem;
+  --type-hero-tracking: -0.005em;
+  --type-subhead-size: 2.1rem;
+  --type-subhead-tracking: 0.011em;
+  --type-tile-size: 3.2rem;
+  --type-section-size: 3.2rem;
+  --type-caption-size: 1.2rem;
+
   /* Additional tokens */
   --type-fixed-font-family: adobe-clean, "Roboto Mono", menlo, consolas, "Liberation Mono", monospace, system-ui, sans-serif;
   --background-color: var(--color-neutral-50);
-  --nav-height: 6.4rem;
+  --nav-height: 4.8rem;
+}
+
+@media (min-width: 834px) {
+  :root {
+    --nav-height: 4.4rem;
+    --type-hero-size: 5.6rem;
+    --type-subhead-size: 2.8rem;
+    --type-tile-size: 4rem;
+    --type-section-size: 4.8rem;
+  }
 }
 
 /* fallback font */
+@font-face {
+  font-family: inter-fallback;
+  size-adjust: 107%;
+  src: local("Arial");
+}
+
 @font-face {
   font-family: adobe-clean;
   size-adjust: 100%;
@@ -146,15 +187,19 @@ html {
 }
 
 body {
-  font: var(--type-body-1-default-font);
-  letter-spacing: var(--type-body-1-default-letter-spacing);
+  font-family: var(--type-base-font-family);
+  font-size: var(--type-body-size);
+  font-weight: 400;
+  line-height: var(--type-body-line-height);
+  letter-spacing: var(--type-body-tracking);
   margin: 0;
-  color: var(--color-neutral-800);
+  color: var(--color-text);
   background-color: var(--background-color);
   display: grid;
   grid-template-rows: auto 1fr auto;
   grid-template-columns: 100%;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body:not(.appear) {
@@ -192,38 +237,41 @@ h5,
 h6 {
   margin-top: 0.8em;
   margin-bottom: 0.25em;
-  line-height: 1.25;
+  font-family: var(--type-base-font-family);
+  font-weight: 600;
+  line-height: 1.1;
   scroll-margin: 40px;
 }
 
 h1 {
-  font: var(--type-display-1-font);
-  letter-spacing: var(--type-display-1-letter-spacing);
+  font-size: var(--type-hero-size);
+  line-height: 1.07;
+  letter-spacing: var(--type-hero-tracking);
 }
 
 h2 {
-  font: var(--type-display-2-font);
-  letter-spacing: var(--type-display-2-letter-spacing);
+  font-size: var(--type-section-size);
+  line-height: 1.08;
+  letter-spacing: -0.003em;
 }
 
 h3 {
-  font: var(--type-display-3-font);
-  letter-spacing: var(--type-display-3-letter-spacing);
+  font-size: 2.8rem;
+  line-height: 1.14;
+  letter-spacing: 0.007em;
 }
 
 h4 {
-  font: var(--type-headline-1-font);
-  letter-spacing: var(--type-headline-1-letter-spacing);
+  font-size: 2.1rem;
+  line-height: 1.19;
+  letter-spacing: 0.011em;
 }
 
-h5 {
-  font: var(--type-headline-2-strong-font);
-  letter-spacing: var(--type-headline-2-strong-letter-spacing);
-}
-
+h5,
 h6 {
-  font: var(--type-headline-2-default-font);
-  letter-spacing: var(--type-headline-2-default-letter-spacing);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line-height);
+  letter-spacing: var(--type-body-tracking);
 }
 
 p,
@@ -275,15 +323,12 @@ button {
 
 /* links */
 a:not(.dropin-design a) {
-  color: var(--color-brand-500);
-  font: var(--type-body-1-strong-font);
-  letter-spacing: var(--type-body-1-strong-letter-spacing);
+  color: var(--color-link);
   text-decoration: none;
   overflow-wrap: break-word;
 }
 
 a:not(.dropin-design a):hover {
-  color: var(--color-brand-600);
   text-decoration: underline;
 }
 
@@ -300,17 +345,20 @@ button.button {
   justify-content: center;
   max-width: 100%;
   margin: 0;
-  border: var(--shape-border-width-3) solid transparent;
-  border-radius: var(--shape-border-radius-3);
-  padding: 0.5em 1.2em;
-  font: var(--type-button-2-font);
-  letter-spacing: var(--type-button-2-letter-spacing);
+  min-width: 2.8rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: 1.1rem 2.1rem;
+  font-family: var(--type-base-font-family);
+  font-size: 1.7rem;
   font-style: normal;
-  font-weight: 500;
-  line-height: 1.25;
+  font-weight: 400;
+  line-height: 1.1765;
+  letter-spacing: var(--type-body-tracking);
   text-decoration: none;
-  background-color: var(--color-brand-500);
-  color: var(--color-neutral-50);
+  background-color: var(--color-action);
+  color: #fff;
+  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -327,7 +375,8 @@ main a.button:hover,
 main a.button:focus,
 button.button:hover,
 button.button:focus {
-  background-color: var(--color-brand-600);
+  background-color: var(--color-action-hover);
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -340,17 +389,17 @@ button.button:disabled:hover {
 
 a.button.primary,
 button.button.primary {
-  border-color: var(--color-brand-500);
-  background-color: var(--color-brand-500);
-  color: var(--color-neutral-50);
+  border-color: var(--color-action);
+  background-color: var(--color-action);
+  color: #fff;
 }
 
 a.button.primary:hover,
 a.button.primary:focus-visible,
 button.button.primary:hover,
 button.button.primary:focus-visible {
-  border-color: var(--color-brand-600);
-  background-color: var(--color-brand-600);
+  border-color: var(--color-action-hover);
+  background-color: var(--color-action-hover);
 }
 
 a.button.primary[aria-disabled="true"],
@@ -366,16 +415,17 @@ button.button.primary:disabled:focus-visible {
 
 main a.button.secondary,
 button.button.secondary {
-  background-color: unset;
-  border: var(--shape-border-width-3) solid currentcolor;
-  color: var(--color-brand-500);
+  background-color: transparent;
+  border: 1px solid var(--color-action);
+  color: var(--color-action);
 }
 
 main a.button.secondary:hover,
 main a.button.secondary:focus-visible,
 button.button.secondary:hover,
 button.button.secondary:focus-visible {
-  color: var(--color-brand-600);
+  background-color: var(--color-action);
+  color: #fff;
 }
 
 
@@ -483,7 +533,7 @@ main > .section:first-of-type {
 /* section metadata - styles - start */
 main .section.light,
 main .section.highlight {
-  background-color: var(--color-neutral-100);
+  background-color: var(--color-surface-light);
   margin: 0;
   padding: var(--spacing-xbig) 0;
 }
@@ -566,6 +616,26 @@ main .section[data-margin="xxhuge"] {
 }
 
 /* section metadata - styles - end */
+
+/* reveal-on-scroll effect (see scripts/scripts.js) */
+.reveal {
+  opacity: 0;
+  transform: translateY(3rem);
+  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+}
+
+.reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
 
 /* Base Design System Tokens */
 .dropin-design.dropin-design {

@@ -1,0 +1,247 @@
+/* full-bleed: tiles span the viewport */
+main > .section > .showcase-wrapper {
+  max-width: none;
+  padding: 0;
+}
+
+main > .section.showcase-container {
+  margin: 0;
+}
+
+.showcase {
+  display: grid;
+  gap: 1.2rem;
+  padding-bottom: 1.2rem;
+}
+
+.showcase .showcase-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 50rem;
+  overflow: hidden;
+  text-align: center;
+  background-color: #fff;
+  color: var(--color-text);
+}
+
+.showcase .showcase-gray {
+  background-color: var(--color-surface-light);
+}
+
+.showcase .showcase-dark {
+  background-color: var(--color-surface-dark);
+  color: var(--color-text-on-dark);
+}
+
+/* copy */
+.showcase .showcase-copy {
+  position: relative;
+  z-index: 1;
+  padding: 4.4rem 2.4rem 0;
+  max-width: 98rem;
+}
+
+.showcase .showcase-copy > * {
+  margin: 0;
+}
+
+.showcase .showcase-eyebrow {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  line-height: 1.43;
+  color: inherit;
+  opacity: 0.8;
+}
+
+.showcase .showcase-headline {
+  font-size: var(--type-hero-size);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: var(--type-hero-tracking);
+}
+
+.showcase .showcase-subhead {
+  margin-top: 0.6rem;
+  font-size: var(--type-subhead-size);
+  font-weight: 400;
+  line-height: 1.19;
+  letter-spacing: var(--type-subhead-tracking);
+}
+
+.showcase .showcase-note {
+  margin-top: 0.4rem;
+  font-size: 1.4rem;
+  color: var(--color-text-secondary);
+}
+
+.showcase .showcase-dark .showcase-note {
+  color: #86868b;
+}
+
+.showcase .showcase-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.4rem;
+  margin-top: 1.6rem;
+}
+
+.showcase .showcase-ctas .button-wrapper {
+  margin: 0;
+}
+
+.showcase .showcase-ctas a.button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.4rem;
+  line-height: 1.2858;
+  letter-spacing: -0.016em;
+}
+
+.showcase .showcase-dark .showcase-ctas a.button.secondary {
+  border-color: var(--color-link-on-dark);
+  color: var(--color-link-on-dark);
+}
+
+.showcase .showcase-dark .showcase-ctas a.button.secondary:hover,
+.showcase .showcase-dark .showcase-ctas a.button.secondary:focus-visible {
+  background-color: var(--color-link-on-dark);
+  color: #000;
+}
+
+/* media */
+.showcase .showcase-media {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1.6rem;
+}
+
+.showcase .showcase-media picture {
+  display: block;
+  width: 100%;
+  max-width: 54rem;
+}
+
+.showcase .showcase-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 32rem;
+  object-fit: contain;
+  object-position: center bottom;
+  transition: transform 1.2s var(--ease-out);
+}
+
+/* entrance */
+.showcase .showcase-tile .showcase-copy,
+.showcase .showcase-tile .showcase-media {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-out), transform 1.1s var(--ease-out);
+}
+
+.showcase .showcase-tile .showcase-copy {
+  transform: translateY(2rem);
+}
+
+.showcase .showcase-tile .showcase-media {
+  transform: translateY(4rem) scale(0.96);
+  transition-delay: 0.15s;
+}
+
+.showcase .showcase-tile.in-view .showcase-copy,
+.showcase .showcase-tile.in-view .showcase-media {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .showcase .showcase-tile:hover .showcase-media img {
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase .showcase-tile .showcase-copy,
+  .showcase .showcase-tile .showcase-media,
+  .showcase .showcase-media img {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* grid variant: smaller tiles, two per row from tablet up */
+.showcase.grid .showcase-light {
+  background-color: var(--color-surface-light);
+}
+
+.showcase.grid .showcase-headline {
+  font-size: var(--type-tile-size);
+  line-height: 1.125;
+}
+
+.showcase.grid .showcase-subhead {
+  font-size: 1.9rem;
+  line-height: 1.21;
+}
+
+@media (min-width: 735px) {
+  .showcase .showcase-tile {
+    min-height: 58rem;
+  }
+
+  .showcase .showcase-copy {
+    padding-top: 5.2rem;
+  }
+
+  .showcase .showcase-ctas a.button {
+    padding: 1.1rem 2.1rem;
+    font-size: 1.7rem;
+    line-height: 1.1765;
+    letter-spacing: var(--type-body-tracking);
+  }
+
+  .showcase .showcase-media picture {
+    max-width: 72rem;
+  }
+
+  .showcase .showcase-media img {
+    max-height: 40rem;
+  }
+
+  .showcase.grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 1.2rem 1.2rem;
+  }
+
+  .showcase.grid .showcase-media img {
+    max-height: 34rem;
+  }
+
+  .showcase.grid .showcase-subhead {
+    font-size: 2.1rem;
+  }
+}
+
+@media (min-width: 1069px) {
+  .showcase .showcase-tile {
+    min-height: 69.2rem;
+  }
+
+  .showcase .showcase-media img {
+    max-height: 46rem;
+  }
+
+  .showcase.grid .showcase-tile {
+    min-height: 58rem;
+  }
+
+  .showcase.grid .showcase-media img {
+    max-height: 36rem;
+  }
+}
