@@ -2,7 +2,7 @@
 
 ## Overview
 
-Global navigation: brand mark, top-level links with flyout panels, and utility icons (search, bag). Desktop shows hover flyouts that blur the page behind them; small screens get a full-screen menu with drill-in submenus.
+Global navigation: a dark translucent bar pinned to the top of the page with the brand mark, top-level links with flyout panels, and utility icons (search, bag). Desktop shows dark hover flyouts that dim and blur the page behind them; small screens get a dark full-screen menu with drill-in submenus.
 
 ## Integration
 

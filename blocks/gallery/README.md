@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Gallery block is a looping carousel of wide artwork slides on a dark background. The active slide is centred with its neighbours peeking in, dimmed, on each side. It autoplays, shows progress dots and a play/pause button, and supports swipe and keyboard navigation.
+The Gallery block is a looping carousel of wide artwork slides under an optional centred section title. The active slide is centred with its neighbours peeking in on each side. It autoplays, shows progress dots and a play/pause button, and supports swipe and keyboard navigation.
 
 ## Integration
 
@@ -12,16 +12,22 @@ This block does not read configuration via `readBlockConfig()`. Content is defin
 
 ### Block Structure
 
-Each row becomes one slide:
-- **Image cell** – the slide artwork; becomes `gallery-media`.
-- **Caption cell** (optional) – becomes `gallery-caption`, overlaid at the bottom of the active slide. A heading is used as the slide title (also used in the dot's accessible label), paragraphs as supporting text, and a **bold** link as a white button.
+- **Title row** (optional) – a row with a heading and no image becomes the centred section title (`gallery-title`) and the carousel's accessible name.
+- **Slide rows** – one per slide:
+  - **Image cell** – the slide artwork; becomes `gallery-media`. An optional second picture is used below 735px instead of the first.
+  - **Caption cell** (optional) – becomes `gallery-caption`, overlaid at the bottom of the active slide. A heading is kept for assistive tech only (the artwork carries the title) and labels the slide's dot; paragraphs are supporting text; a **bold** link becomes a light pill button.
 
-Rows without an image are skipped.
+Rows that are neither are skipped.
+
+### Variants
+
+- `compact` – a smaller row of tiles placed after a full-size gallery in the same section. It has no autoplay or controls of its own: it follows the full-size gallery's slide changes and takes over its dots and play/pause button, so both share one set of controls below the compact row.
 
 Example authoring structure:
 ```
 | Gallery            |                                                  |
 |--------------------|--------------------------------------------------|
+| <h2>Section title</h2> |                                              |
 | ![Show 1](s1.jpg)  | <h3>Title</h3><p>Genre · Logline</p>**Stream now** |
 | ![Show 2](s2.jpg)  | <h3>Title</h3><p>Genre · Logline</p>**Stream now** |
 ```

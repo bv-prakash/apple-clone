@@ -13,12 +13,12 @@ This block does not read configuration via `readBlockConfig()`. Content is defin
 ### Block Structure
 
 Each row becomes one tile. Cells can be in any order:
-- **Image cell** – a picture; becomes `showcase-media`.
+- **Image cell** – a picture; becomes `showcase-media`. The artwork fills the tile height behind the copy and stays centred, so its background should match the tile theme. An optional second picture is used below 735px instead of the first.
 - **Copy cell** – becomes `showcase-copy`:
   - an optional short paragraph before the heading → eyebrow label (`showcase-eyebrow`)
   - a heading → headline (`showcase-headline`)
   - the paragraph right after the heading → subhead (`showcase-subhead`)
-  - any later plain paragraphs → small print (`showcase-note`)
+  - any later plain paragraphs → note line (`showcase-note`), e.g. availability; superscript footnote markers are supported
   - links authored as **bold** → filled button, *italic* → outline button
 - **Theme cell** (optional) – `light`, `dark` or `gray`. Defaults to `light`, or `dark` when the block has the `dark` class.
 
@@ -32,7 +32,8 @@ Example authoring structure:
 
 ### Variants
 
-- `grid` – two tiles per row from 735px; smaller headline and subhead sizes. Light tiles use the light grey surface so they stand out from the page.
+- default – full-width tiles: 500px tall on small screens, 580px from 735px, 692px from 1069px.
+- `grid` – two 580px tiles per row from 735px, with smaller headline and subhead sizes and compact buttons at every size.
 
 <!-- ### URL Parameters
 
@@ -51,12 +52,11 @@ This block does not emit or listen to any custom events. -->
 ### Page Context Detection
 
 - **First tile on the page**: shown immediately and its image loads eagerly, because it is the likely LCP element.
-- **Other tiles**: images load lazily and the tile animates in when it scrolls into view (`revealOnScroll` from `scripts/scripts.js`). The shared observer disconnects once every tile has been revealed.
-- **Reduced motion**: tiles are shown without animation.
+- **Other tiles**: images load lazily. Tiles are static: no entrance or hover animation.
 
 ### User Interaction Flows
 
-1. **Browse**: scrolling reveals each tile; on devices with a fine pointer, hovering a tile gently scales its image.
+1. **Open a tile**: the whole tile links to its first button's destination (`showcase-cover`, hidden from assistive tech and the tab order); the buttons remain separate links above it.
 2. **Act**: the buttons link to the product and shop pages authored in the copy cell.
 
 ### Error Handling

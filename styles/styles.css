@@ -617,26 +617,6 @@ main .section[data-margin="xxhuge"] {
 
 /* section metadata - styles - end */
 
-/* reveal-on-scroll effect (see scripts/scripts.js) */
-.reveal {
-  opacity: 0;
-  transform: translateY(3rem);
-  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
-}
-
-.reveal.in-view {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-}
-
 /* Base Design System Tokens */
 .dropin-design.dropin-design {
   --background-none: none 0 0% no-repeat padding-box;

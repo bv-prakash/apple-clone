@@ -1,5 +1,3 @@
-import { revealOnScroll } from '../../scripts/scripts.js';
-
 const THEMES = ['light', 'dark', 'gray'];
 
 /**
@@ -19,7 +17,6 @@ function themeOf(cell) {
  * @param {Element} block The block element
  */
 export default function decorate(block) {
-  const tiles = [];
   const fallbackTheme = block.classList.contains('dark') ? 'dark' : 'light';
   const isFirstSection = block.closest('.section') === block.closest('main')?.querySelector('.section');
   [...block.children].forEach((row, i) => {
@@ -36,10 +33,6 @@ export default function decorate(block) {
 
     const tile = document.createElement('div');
     tile.className = `showcase-tile showcase-${theme}`;
-    // the first tile on the page is the LCP candidate; never hide it
-    if (i === 0 && isFirstSection) {
-      tile.classList.add('in-view');
-    }
 
     if (text) {
       text.className = 'showcase-copy';
@@ -71,15 +64,31 @@ export default function decorate(block) {
 
     if (media) {
       media.className = 'showcase-media';
-      const img = media.querySelector('img');
-      // the first tile is the likely LCP image; authoring tools may mark every image lazy
-      if (img) img.loading = tile.classList.contains('in-view') ? 'eager' : 'lazy';
+      // an optional second picture is the small-screen version of the artwork;
+      // authored side by side they arrive wrapped in a paragraph, so unwrap them
+      const pictures = media.querySelectorAll('picture');
+      media.replaceChildren(...(pictures.length ? pictures : media.childNodes));
+      if (pictures.length > 1) {
+        media.classList.add('has-small');
+        pictures[1].classList.add('showcase-media-small');
+      }
+      // the first tile holds the likely LCP image; authoring tools may mark every image lazy
+      const loading = i === 0 && isFirstSection ? 'eager' : 'lazy';
+      media.querySelectorAll('img').forEach((img) => { img.loading = loading; });
       tile.append(media);
     }
 
-    row.replaceWith(tile);
-    tiles.push(tile);
-  });
+    // the whole tile is a click target for its first link; the buttons stay separate links
+    const primary = text?.querySelector('a[href]');
+    if (primary) {
+      const cover = document.createElement('a');
+      cover.className = 'showcase-cover';
+      cover.href = primary.href;
+      cover.tabIndex = -1;
+      cover.setAttribute('aria-hidden', 'true');
+      tile.prepend(cover);
+    }
 
-  revealOnScroll(tiles, '0px 0px -15% 0px');
+    row.replaceWith(tile);
+  });
 }
