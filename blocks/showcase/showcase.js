@@ -80,7 +80,8 @@ export default function decorate(block) {
     if (media) {
       media.className = 'showcase-media';
       const img = media.querySelector('img');
-      if (img && i > 0) img.loading = 'lazy';
+      // the first tile is the likely LCP image; authoring tools may mark every image lazy
+      if (img) img.loading = tile.classList.contains('in-view') ? 'eager' : 'lazy';
       tile.append(media);
     }
 
