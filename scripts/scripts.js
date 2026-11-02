@@ -227,6 +227,29 @@ async function loadEager(doc) {
 }
 
 /**
+ * Fades and slides content up as it scrolls into view.
+ * Only default content is targeted; blocks animate themselves.
+ * The first section is skipped so the LCP element is never hidden.
+ * @param {Element} main The main element
+ */
+function decorateReveal(main) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!('IntersectionObserver' in window)) return;
+  const targets = [...main.querySelectorAll('.section:not(:first-child) > .default-content-wrapper')];
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('revealed');
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -10% 0px' });
+  targets.forEach((el) => {
+    el.classList.add('reveal');
+    observer.observe(el);
+  });
+}
+
+/**
  * Loads everything that doesn't need to be delayed.
  * @param {Element} doc The container element
  */
@@ -234,6 +257,7 @@ async function loadLazy(doc) {
   loadHeader(doc.querySelector('body > header'));
 
   const main = doc.querySelector('main');
+  decorateReveal(main);
   await loadSections(main);
 
   const { hash } = window.location;

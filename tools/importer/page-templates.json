@@ -1,0 +1,64 @@
+{
+  "templates": [
+    {
+      "name": "home",
+      "description": "Homepage: full-width promo tiles, a two-column promo grid and a streaming gallery.",
+      "urls": [
+        "http://127.0.0.1:8099/index.html"
+      ],
+      "blocks": [
+        {
+          "name": "showcase",
+          "instances": [
+            "main > section.promo.promo-hero"
+          ]
+        },
+        {
+          "name": "showcase-grid",
+          "instances": [
+            "main > div.promo-grid"
+          ]
+        },
+        {
+          "name": "gallery",
+          "instances": [
+            "main > section.shows"
+          ]
+        }
+      ],
+      "sections": []
+    },
+    {
+      "name": "nav",
+      "description": "Global navigation fragment.",
+      "urls": [
+        "http://127.0.0.1:8099/nav.html"
+      ],
+      "blocks": [
+        {
+          "name": "nav",
+          "instances": [
+            "header nav.site-nav"
+          ]
+        }
+      ],
+      "sections": []
+    },
+    {
+      "name": "footer",
+      "description": "Global footer fragment.",
+      "urls": [
+        "http://127.0.0.1:8099/footer.html"
+      ],
+      "blocks": [
+        {
+          "name": "footer",
+          "instances": [
+            "footer.site-footer"
+          ]
+        }
+      ],
+      "sections": []
+    }
+  ]
+}
