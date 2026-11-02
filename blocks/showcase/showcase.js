@@ -52,10 +52,19 @@ export default function decorate(block) {
         ctas[0].before(group);
         ctas.forEach((cta) => group.append(cta));
       }
-      // short paragraphs above the headline read as an eyebrow label
-      const first = text.firstElementChild;
-      if (first && first.tagName === 'P' && heading && !first.querySelector('a')) {
-        first.classList.add('showcase-eyebrow');
+      // plain paragraphs: above the headline = eyebrow, right after = subhead, later = note
+      if (heading) {
+        let seenHeading = false;
+        [...text.children].forEach((el) => {
+          if (el === heading) {
+            seenHeading = true;
+            return;
+          }
+          if (el.tagName !== 'P' || el.classList.contains('button-wrapper') || el.querySelector('a')) return;
+          if (!seenHeading) el.classList.add('showcase-eyebrow');
+          else if (el.previousElementSibling === heading) el.classList.add('showcase-subhead');
+          else el.classList.add('showcase-note');
+        });
       }
       tile.append(text);
     }

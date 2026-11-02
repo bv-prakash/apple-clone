@@ -63,7 +63,7 @@ main > .section.showcase-container {
   letter-spacing: var(--type-hero-tracking);
 }
 
-.showcase .showcase-headline + p {
+.showcase .showcase-subhead {
   margin-top: 0.6rem;
   font-size: var(--type-subhead-size);
   font-weight: 400;
@@ -71,13 +71,13 @@ main > .section.showcase-container {
   letter-spacing: var(--type-subhead-tracking);
 }
 
-.showcase .showcase-copy p:not(.button-wrapper) + p:not(.button-wrapper) {
+.showcase .showcase-note {
   margin-top: 0.4rem;
   font-size: 1.4rem;
   color: var(--color-text-secondary);
 }
 
-.showcase .showcase-dark .showcase-copy p:not(.button-wrapper) + p:not(.button-wrapper) {
+.showcase .showcase-dark .showcase-note {
   color: #86868b;
 }
 
@@ -185,7 +185,7 @@ main > .section.showcase-container {
   line-height: 1.125;
 }
 
-.showcase.grid .showcase-headline + p {
+.showcase.grid .showcase-subhead {
   font-size: 1.9rem;
   line-height: 1.21;
 }
@@ -223,7 +223,7 @@ main > .section.showcase-container {
     max-height: 34rem;
   }
 
-  .showcase.grid .showcase-headline + p {
+  .showcase.grid .showcase-subhead {
     font-size: 2.1rem;
   }
 }

@@ -276,8 +276,7 @@ main > .section > .gallery-wrapper {
   }
 
   .gallery .gallery-caption {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     align-items: center;
     column-gap: 1.6rem;
     padding: 3.2rem 4rem;

@@ -177,8 +177,7 @@ header .globalnav-opener {
   display: none;
 }
 
-/* mobile submenu drill-in */
-/* only the links move: a transformed ancestor would trap the fixed flyout */
+/* mobile submenu drill-in: only the links move, since a transformed ancestor would trap the fixed flyout */
 header .globalnav.submenu-open a.globalnav-link {
   opacity: 0;
   transform: translateX(-3rem);
@@ -424,8 +423,8 @@ header .globalnav a:focus-visible {
     opacity: 1;
   }
 
-  header .globalnav-flyout,
-  header .globalnav.submenu-open .has-flyout.open .globalnav-flyout {
+  /* submenu-open is never set on desktop (it is cleared when the breakpoint changes) */
+  header .globalnav-flyout {
     position: absolute;
     inset: var(--nav-height) 0 auto;
     overflow: visible;

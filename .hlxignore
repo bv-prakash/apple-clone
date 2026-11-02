@@ -15,7 +15,3 @@ tools/pdp-metadata/*
 plugins/experimentation/documentation/images/*
 _*.json
 sync-block-collection.sh
-
-migration-work/
-migration-work/*
-tools/importer/*
