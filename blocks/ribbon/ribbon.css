@@ -1,0 +1,52 @@
+/* full-bleed strip directly above the first tiles */
+main > .section > .ribbon-wrapper {
+  max-width: none;
+  padding: 0;
+}
+
+main > .section.ribbon-container {
+  margin: 0;
+}
+
+.ribbon {
+  padding: 1.6rem 2.4rem;
+  background-color: var(--color-text);
+  color: var(--color-text-on-dark);
+  font-size: 1.4rem;
+  line-height: 1.4286;
+  letter-spacing: -0.016em;
+  text-align: center;
+}
+
+.ribbon .ribbon-content > * {
+  margin: 0;
+}
+
+.ribbon sup {
+  font-size: 0.6em;
+  line-height: 0;
+}
+
+.ribbon .ribbon-content a {
+  color: var(--color-link-on-dark);
+}
+
+.ribbon .ribbon-content a.ribbon-link {
+  white-space: nowrap;
+}
+
+/* chevron after the call to action */
+.ribbon .ribbon-content a.ribbon-link::after {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-left: 0.3em;
+  border-top: 0.1em solid currentcolor;
+  border-right: 0.1em solid currentcolor;
+  transform: translateY(-0.08em) rotate(45deg);
+}
+
+.ribbon .ribbon-content a:hover {
+  text-decoration: underline;
+}

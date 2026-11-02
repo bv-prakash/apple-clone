@@ -1,12 +1,21 @@
-/* global navigation — mobile first */
+/* global navigation — mobile first; the bar stays pinned to the top */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}
+
 header .header,
 header .nav-wrapper {
   height: var(--nav-height);
 }
 
 header .globalnav {
-  --globalnav-bg: rgb(250 250 252 / 80%);
-  --globalnav-text: rgb(0 0 0 / 80%);
+  --globalnav-bg: rgb(29 29 31 / 80%);
+  --globalnav-surface: #161617;
+  --globalnav-text: rgb(255 255 255 / 80%);
+  --globalnav-link: #e8e8ed;
+  --globalnav-muted: #86868b;
   --flyout-height: 0px;
 
   position: relative;
@@ -42,13 +51,15 @@ header .globalnav-brand-link {
   height: var(--nav-height);
   padding: 0 0.8rem;
   margin-left: -0.8rem;
-  color: var(--color-text);
+  color: var(--globalnav-link);
 }
 
+/* the artwork is dark; the bar is dark, so lighten it */
 header .globalnav-brand-link img {
   display: block;
   width: 2.2rem;
   height: 2.2rem;
+  filter: invert(1) brightness(0.92);
 }
 
 header .globalnav-tools {
@@ -77,6 +88,10 @@ header .globalnav-tool .icon {
   height: 1.7rem;
 }
 
+header .globalnav-tool .icon img {
+  filter: invert(1) brightness(0.92);
+}
+
 /* hamburger that morphs into a close icon */
 header .globalnav-menutrigger {
   position: relative;
@@ -95,7 +110,7 @@ header .globalnav-menutrigger span {
   width: 1.6rem;
   height: 0.12rem;
   border-radius: 0.1rem;
-  background-color: var(--color-text);
+  background-color: var(--globalnav-link);
   transition: transform 0.3s var(--ease-out), top 0.3s var(--ease-out);
 }
 
@@ -123,14 +138,14 @@ header .globalnav-menu {
   inset: var(--nav-height) 0 0;
   overflow: hidden auto;
   visibility: hidden;
-  background-color: #fff;
+  background-color: var(--globalnav-surface);
   opacity: 0;
   transition: opacity 0.3s var(--ease-out), visibility 0s linear 0.3s;
 }
 
 header .globalnav.menu-open::before {
   height: 100vh;
-  background-color: #fff;
+  background-color: var(--globalnav-surface);
 }
 
 header .globalnav.menu-open .globalnav-menu {
@@ -164,12 +179,12 @@ header a.globalnav-link {
   font-weight: 600;
   line-height: 1.14;
   letter-spacing: 0.007em;
-  color: #333336;
+  color: var(--globalnav-link);
   transition: opacity 0.3s var(--ease-out), transform 0.4s var(--ease-out);
 }
 
 header a.globalnav-link:hover {
-  color: #000;
+  color: #fff;
   text-decoration: none;
 }
 
@@ -190,7 +205,7 @@ header .globalnav-flyout {
   z-index: 1;
   overflow: hidden auto;
   visibility: hidden;
-  background-color: #fff;
+  background-color: var(--globalnav-surface);
   opacity: 0;
   transform: translateX(3rem);
   transition: opacity 0.3s var(--ease-out), transform 0.4s var(--ease-out), visibility 0s linear 0.4s;
@@ -213,7 +228,7 @@ header .globalnav-back {
   height: var(--nav-height);
   padding: 0;
   border: 0;
-  background-color: #fff;
+  background-color: var(--globalnav-surface);
   cursor: pointer;
 }
 
@@ -230,7 +245,7 @@ header .globalnav-group-title {
   font-size: 1.7rem;
   font-weight: 400;
   line-height: 1.24;
-  color: var(--color-text-secondary);
+  color: var(--globalnav-muted);
 }
 
 header .globalnav-group ul {
@@ -245,7 +260,7 @@ header a.globalnav-flyout-link {
   font-size: 1.7rem;
   font-weight: 600;
   line-height: 1.24;
-  color: #333336;
+  color: var(--globalnav-link);
 }
 
 header .globalnav-group-primary a.globalnav-flyout-link {
@@ -254,7 +269,7 @@ header .globalnav-group-primary a.globalnav-flyout-link {
 }
 
 header a.globalnav-flyout-link:hover {
-  color: var(--color-link);
+  color: #fff;
   text-decoration: none;
 }
 
@@ -285,7 +300,7 @@ header .globalnav-chevron {
 header .globalnav-chevron-left {
   width: 1rem;
   height: 1rem;
-  color: var(--color-text-secondary);
+  color: var(--globalnav-muted);
   transform: rotate(135deg);
 }
 
@@ -299,7 +314,7 @@ header .globalnav-curtain {
   inset: 0;
   z-index: 9998;
   visibility: hidden;
-  background-color: rgb(232 232 237 / 40%);
+  background-color: rgb(0 0 0 / 40%);
   backdrop-filter: blur(20px);
   opacity: 0;
   transition: opacity 0.32s var(--ease-out), visibility 0s linear 0.32s;
@@ -336,7 +351,7 @@ header .globalnav a:focus-visible {
 
   header .globalnav.flyout-open::before {
     height: calc(var(--nav-height) + var(--flyout-height));
-    background-color: #fafafc;
+    background-color: var(--globalnav-surface);
   }
 
   header .globalnav-brand-link img {
@@ -387,7 +402,7 @@ header .globalnav a:focus-visible {
 
   header a.globalnav-link:hover,
   header .has-flyout.open a.globalnav-link {
-    color: #000;
+    color: #fff;
   }
 
   header a.globalnav-tool {

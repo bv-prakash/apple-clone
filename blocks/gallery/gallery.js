@@ -1,14 +1,31 @@
 const AUTOPLAY_DELAY = 5000;
 
 /**
+ * Marks a second picture in a media cell as the small-screen version.
+ * @param {Element} media
+ */
+function decorateMedia(media) {
+  media.className = 'gallery-media';
+  // pictures authored side by side arrive wrapped in a paragraph, so unwrap them
+  const pictures = media.querySelectorAll('picture');
+  media.replaceChildren(...(pictures.length ? pictures : media.childNodes));
+  if (pictures.length > 1) {
+    media.classList.add('has-small');
+    pictures[1].classList.add('gallery-media-small');
+  }
+  media.querySelectorAll('img').forEach((img) => { img.loading = 'lazy'; });
+}
+
+/**
  * Builds one slide from an authored row (image cell + caption cell).
  * @param {Element} row
- * @returns {HTMLLIElement|null}
+ * @param {number} index
+ * @param {number} total
+ * @returns {HTMLLIElement}
  */
 function buildSlide(row, index, total) {
   const cells = [...row.children];
   const media = cells.find((cell) => cell.querySelector('picture, img'));
-  if (!media) return null;
   const caption = cells.find((cell) => cell !== media && cell.textContent.trim());
 
   const slide = document.createElement('li');
@@ -16,11 +33,12 @@ function buildSlide(row, index, total) {
   slide.setAttribute('role', 'group');
   slide.setAttribute('aria-roledescription', 'slide');
   slide.setAttribute('aria-label', `${index + 1} of ${total}`);
-  media.className = 'gallery-media';
-  media.querySelectorAll('img').forEach((img) => { img.loading = 'lazy'; });
+  decorateMedia(media);
   slide.append(media);
   if (caption) {
     caption.className = 'gallery-caption';
+    // the artwork carries the title, so the heading is kept for assistive tech only
+    caption.querySelector('h2, h3, h4')?.classList.add('gallery-caption-title');
     slide.append(caption);
   }
   return slide;
@@ -35,21 +53,45 @@ function cloneSlide(slide) {
 }
 
 /**
+ * The full-size gallery before this one in the same section, if any.
+ * @param {Element} block
+ * @returns {Element|undefined}
+ */
+function findLead(block) {
+  const wrappers = [...block.closest('.section').querySelectorAll('.gallery-wrapper')];
+  const own = block.closest('.gallery-wrapper');
+  return wrappers
+    .slice(0, wrappers.indexOf(own))
+    .reverse()
+    .map((wrapper) => wrapper.querySelector('.gallery:not(.compact)'))
+    .find(Boolean);
+}
+
+/**
  * Looping gallery with peeking neighbours, autoplay, dots and swipe.
+ * A `compact` gallery placed after a full-size one in the same section follows
+ * its slide changes and takes over its controls, so both share one set of dots.
  * @param {Element} block The block element
  */
 export default function decorate(block) {
   const rows = [...block.children];
-  const slides = rows
-    .map((row, i) => buildSlide(row, i, rows.length))
-    .filter(Boolean);
+  const titleRow = rows.find((row) => !row.querySelector('picture, img') && row.querySelector('h1, h2, h3'));
+  const slideRows = rows.filter((row) => row !== titleRow && row.querySelector('picture, img'));
+  const slides = slideRows.map((row, i) => buildSlide(row, i, slideRows.length));
+  const compact = block.classList.contains('compact');
   block.textContent = '';
+
+  if (titleRow) {
+    const title = titleRow.querySelector('h1, h2, h3');
+    title.classList.add('gallery-title');
+    block.append(title);
+  }
   if (!slides.length) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   block.setAttribute('role', 'region');
   block.setAttribute('aria-roledescription', 'carousel');
-  block.setAttribute('aria-label', 'Featured gallery');
+  block.setAttribute('aria-label', block.querySelector('.gallery-title')?.textContent.trim() || 'Featured gallery');
 
   const viewport = document.createElement('div');
   viewport.className = 'gallery-viewport';
@@ -69,36 +111,10 @@ export default function decorate(block) {
   const items = [cloneSlide(slides[slides.length - 1]), ...slides, cloneSlide(slides[0])];
   track.append(...items);
 
-  const controls = document.createElement('div');
-  controls.className = 'gallery-controls';
-  const dots = document.createElement('div');
-  dots.className = 'gallery-dots';
-  const dotButtons = slides.map((slide, i) => {
-    const dot = document.createElement('button');
-    dot.type = 'button';
-    dot.className = 'gallery-dot';
-    dot.dataset.index = i + 1;
-    const title = slide.querySelector('.gallery-caption :is(h2, h3, strong)');
-    dot.setAttribute('aria-label', `Show slide ${i + 1}${title ? `: ${title.textContent.trim()}` : ''}`);
-    return dot;
-  });
-  dots.append(...dotButtons);
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'gallery-toggle';
-  controls.append(dots, toggle);
-  block.append(controls);
-
   let index = 1;
-  let timer;
-  let playing = !reduceMotion;
-  let visible = false;
   let current = -1;
-
-  // every listener and observer hangs off this, so teardown is one call
   const lifecycle = new AbortController();
   const { signal } = lifecycle;
-
   const realIndex = () => (index - 1 + slides.length) % slides.length;
 
   function position(animate) {
@@ -119,17 +135,84 @@ export default function decorate(block) {
         item.inert = !active;
       });
     }
+  }
 
-    const next = realIndex();
-    if (next !== current) {
-      if (current >= 0) {
-        dotButtons[current].classList.remove('active', 'progress');
-        dotButtons[current].removeAttribute('aria-current');
-      }
-      dotButtons[next].classList.add('active');
-      dotButtons[next].setAttribute('aria-current', 'true');
-      current = next;
+  // jump from a clone back to its real slide once the slide-in finishes
+  track.addEventListener('transitionend', (e) => {
+    if (e.target !== track) return;
+    if (index === 0 || index === items.length - 1) {
+      index = index === 0 ? slides.length : 1;
+      position(false);
     }
+  }, { signal });
+
+  let frame;
+  const resize = new ResizeObserver(() => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => position(false));
+  });
+  resize.observe(viewport);
+  signal.addEventListener('abort', () => {
+    cancelAnimationFrame(frame);
+    resize.disconnect();
+  });
+
+  /* compact: mirror the lead gallery */
+  if (compact) {
+    const lead = findLead(block);
+    position(false);
+    if (!lead) return;
+    lead.addEventListener('gallery:change', (e) => {
+      if (!block.isConnected) {
+        lifecycle.abort();
+        return;
+      }
+      const { step } = e.detail;
+      index = step
+        ? Math.max(0, Math.min(index + step, items.length - 1))
+        : (e.detail.index % slides.length) + 1;
+      position(true);
+    }, { signal });
+    const controls = lead.querySelector('.gallery-controls');
+    if (controls) block.append(controls);
+    return;
+  }
+
+  /* full size: autoplay, dots, play/pause, swipe */
+  const controls = document.createElement('div');
+  controls.className = 'gallery-controls';
+  const dots = document.createElement('div');
+  dots.className = 'gallery-dots';
+  const dotButtons = slides.map((slide, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'gallery-dot';
+    dot.dataset.index = i + 1;
+    const title = slide.querySelector('.gallery-caption-title');
+    dot.setAttribute('aria-label', `Show slide ${i + 1}${title ? `: ${title.textContent.trim()}` : ''}`);
+    return dot;
+  });
+  dots.append(...dotButtons);
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'gallery-toggle';
+  controls.append(dots, toggle);
+  block.append(controls);
+
+  let timer;
+  let playing = !reduceMotion;
+  let visible = false;
+
+  function syncDots() {
+    const next = realIndex();
+    if (next === current) return;
+    if (current >= 0) {
+      dotButtons[current].classList.remove('active', 'progress');
+      dotButtons[current].removeAttribute('aria-current');
+    }
+    dotButtons[next].classList.add('active');
+    dotButtons[next].setAttribute('aria-current', 'true');
+    current = next;
   }
 
   function stop() {
@@ -157,10 +240,16 @@ export default function decorate(block) {
   }
 
   function go(next) {
+    const step = next - index;
     index = Math.max(0, Math.min(next, items.length - 1));
     position(true);
+    syncDots();
     restartProgress();
     schedule();
+    // followers mirror single steps so they loop the same way; jumps go straight to the slide
+    block.dispatchEvent(new CustomEvent('gallery:change', {
+      detail: Math.abs(step) === 1 ? { step } : { index: realIndex() },
+    }));
   }
 
   function updateToggle() {
@@ -169,15 +258,7 @@ export default function decorate(block) {
     block.classList.toggle('playing', playing);
   }
 
-  // jump from a clone back to its real slide once the slide-in finishes
-  track.addEventListener('transitionend', (e) => {
-    if (e.target !== track) return;
-    if (index === 0 || index === items.length - 1) {
-      index = index === 0 ? slides.length : 1;
-      position(false);
-    }
-  }, { signal });
-
+  // listen on the controls so they keep working after a compact gallery adopts them
   dots.addEventListener('click', (e) => {
     const dot = e.target.closest('.gallery-dot');
     if (dot) go(Number(dot.dataset.index));
@@ -192,8 +273,7 @@ export default function decorate(block) {
 
   // clicking a peeking neighbour brings it to the centre
   track.addEventListener('click', (e) => {
-    const item = e.target.closest('.gallery-slide');
-    const i = items.indexOf(item);
+    const i = items.indexOf(e.target.closest('.gallery-slide'));
     if (i < 0 || i === index) return;
     e.preventDefault();
     go(i);
@@ -224,22 +304,13 @@ export default function decorate(block) {
   });
   visibility.observe(block);
 
-  // re-centre when the layout width changes (replaces a window resize listener)
-  let frame;
-  const resize = new ResizeObserver(() => {
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => position(false));
-  });
-  resize.observe(viewport);
-
   signal.addEventListener('abort', () => {
     stop();
-    cancelAnimationFrame(frame);
     visibility.disconnect();
-    resize.disconnect();
   });
 
   updateToggle();
   position(false);
+  syncDots();
   restartProgress();
 }
