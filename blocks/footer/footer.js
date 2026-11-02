@@ -35,15 +35,17 @@ function buildDirectory(section) {
     list.id = id;
     list.className = 'footer-column-list';
 
-    toggle.addEventListener('click', () => {
-      if (isDesktop.matches) return;
-      const expanded = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!expanded));
-      column.classList.toggle('open', !expanded);
-    });
-
     column.append(heading, list);
     directory.append(column);
+  });
+
+  // one delegated listener for every column toggle
+  directory.addEventListener('click', (e) => {
+    const toggle = e.target.closest('.footer-column-title button');
+    if (!toggle || isDesktop.matches) return;
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.closest('.footer-column').classList.toggle('open', open);
   });
   return directory;
 }

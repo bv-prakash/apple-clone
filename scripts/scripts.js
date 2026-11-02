@@ -227,26 +227,41 @@ async function loadEager(doc) {
 }
 
 /**
- * Fades and slides content up as it scrolls into view.
- * Only default content is targeted; blocks animate themselves.
+ * Adds `in-view` to each element the first time it scrolls into view.
+ * The observer disconnects itself once every element has been revealed.
+ * @param {Element[]} elements
+ * @param {string} [rootMargin]
+ */
+export function revealOnScroll(elements, rootMargin = '0px 0px -10% 0px') {
+  const pending = elements.filter((el) => !el.classList.contains('in-view'));
+  if (!pending.length) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || !('IntersectionObserver' in window)) {
+    pending.forEach((el) => el.classList.add('in-view'));
+    return;
+  }
+  let remaining = pending.length;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('in-view');
+      observer.unobserve(entry.target);
+      remaining -= 1;
+      if (!remaining) observer.disconnect();
+    });
+  }, { rootMargin });
+  pending.forEach((el) => observer.observe(el));
+}
+
+/**
+ * Fades and slides default content up as it scrolls into view; blocks animate themselves.
  * The first section is skipped so the LCP element is never hidden.
  * @param {Element} main The main element
  */
 function decorateReveal(main) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!('IntersectionObserver' in window)) return;
   const targets = [...main.querySelectorAll('.section:not(:first-child) > .default-content-wrapper')];
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('revealed');
-      observer.unobserve(entry.target);
-    });
-  }, { rootMargin: '0px 0px -10% 0px' });
-  targets.forEach((el) => {
-    el.classList.add('reveal');
-    observer.observe(el);
-  });
+  targets.forEach((el) => el.classList.add('reveal'));
+  revealOnScroll(targets);
 }
 
 /**

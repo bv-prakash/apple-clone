@@ -1,3 +1,5 @@
+import { revealOnScroll } from '../../scripts/scripts.js';
+
 const THEMES = ['light', 'dark', 'gray'];
 
 /**
@@ -12,32 +14,14 @@ function themeOf(cell) {
 }
 
 /**
- * Animates tiles in once they scroll into view.
- * @param {Element[]} tiles
- */
-function observeTiles(tiles) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    || !('IntersectionObserver' in window)) {
-    tiles.forEach((tile) => tile.classList.add('in-view'));
-    return;
-  }
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('in-view');
-      observer.unobserve(entry.target);
-    });
-  }, { rootMargin: '0px 0px -15% 0px' });
-  tiles.forEach((tile) => observer.observe(tile));
-}
-
-/**
  * Promo tiles: one row per tile with an image cell, a text cell
  * and an optional theme cell (light, dark or gray).
  * @param {Element} block The block element
  */
 export default function decorate(block) {
   const tiles = [];
+  const fallbackTheme = block.classList.contains('dark') ? 'dark' : 'light';
+  const isFirstSection = block.closest('.section') === block.closest('main')?.querySelector('.section');
   [...block.children].forEach((row, i) => {
     const cells = [...row.children];
     if (!cells.length) {
@@ -45,16 +29,15 @@ export default function decorate(block) {
       return;
     }
 
-    const theme = cells.map(themeOf).find(Boolean)
-      || (block.classList.contains('dark') ? 'dark' : 'light');
+    const themes = cells.map(themeOf);
+    const theme = themes.find(Boolean) || fallbackTheme;
     const media = cells.find((cell) => cell.querySelector('picture, img'));
-    const text = cells.find((cell) => cell !== media && !themeOf(cell)
-      && cell.textContent.trim());
+    const text = cells.find((cell, j) => cell !== media && !themes[j] && cell.textContent.trim());
 
     const tile = document.createElement('div');
     tile.className = `showcase-tile showcase-${theme}`;
     // the first tile on the page is the LCP candidate; never hide it
-    if (i === 0 && block.closest('.section') === block.closest('main')?.querySelector('.section')) {
+    if (i === 0 && isFirstSection) {
       tile.classList.add('in-view');
     }
 
@@ -89,5 +72,5 @@ export default function decorate(block) {
     tiles.push(tile);
   });
 
-  observeTiles(tiles);
+  revealOnScroll(tiles, '0px 0px -15% 0px');
 }

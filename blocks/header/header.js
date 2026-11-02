@@ -7,6 +7,9 @@ const OPEN_DELAY = 150;
 const CLOSE_DELAY = 120;
 const TOOL_LABELS = { search: 'Search', cart: 'Shopping bag' };
 
+/** @type {AbortController|undefined} */
+let teardown;
+
 /**
  * Reads one top-level nav item: its link and any flyout groups below it.
  * A group is an <li> whose leading text is the group title, followed by a <ul> of links.
@@ -182,19 +185,28 @@ export default async function decorate(block) {
   wrapper.append(nav);
   block.append(wrapper, curtain);
 
-  const flyItems = [...list.querySelectorAll('.has-flyout')];
+  // window/media listeners outlive the header when the page is re-rendered (e.g. DA preview);
+  // tie them to one controller and abort the previous header's on each decorate
+  teardown?.abort();
+  const lifecycle = new AbortController();
+  teardown = lifecycle;
+  const { signal } = lifecycle;
+
+  let openItem = null;
+  let hoverItem = null;
   let openTimer;
   let closeTimer;
 
   function setOpen(li) {
-    flyItems.forEach((item) => {
-      const active = item === li;
-      item.classList.toggle('open', active);
-      item.querySelector('.globalnav-opener').setAttribute('aria-expanded', String(active));
-    });
+    if (openItem && openItem !== li) {
+      openItem.classList.remove('open');
+      openItem.querySelector('.globalnav-opener').setAttribute('aria-expanded', 'false');
+    }
+    openItem = li;
     if (li) {
-      const height = li.querySelector('.globalnav-flyout').scrollHeight;
-      nav.style.setProperty('--flyout-height', `${height}px`);
+      li.classList.add('open');
+      li.querySelector('.globalnav-opener').setAttribute('aria-expanded', 'true');
+      nav.style.setProperty('--flyout-height', `${li.querySelector('.globalnav-flyout').scrollHeight}px`);
     }
     nav.classList.toggle('flyout-open', Boolean(li));
     document.body.classList.toggle('globalnav-flyout-open', Boolean(li) && isDesktop.matches);
@@ -205,6 +217,12 @@ export default async function decorate(block) {
     setOpen(null);
   }
 
+  function closeSoon() {
+    clearTimeout(openTimer);
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(closeAll, CLOSE_DELAY);
+  }
+
   function setMenu(open) {
     nav.classList.toggle('menu-open', open);
     menuButton.setAttribute('aria-expanded', String(open));
@@ -212,53 +230,52 @@ export default async function decorate(block) {
     document.body.style.overflowY = open ? 'hidden' : '';
     if (!open) {
       nav.classList.remove('submenu-open');
-      flyItems.forEach((item) => item.classList.remove('open'));
+      setOpen(null);
     }
   }
 
-  // desktop: hover intent
-  flyItems.forEach((li) => {
-    li.addEventListener('mouseenter', () => {
-      if (!isDesktop.matches) return;
-      clearTimeout(closeTimer);
-      clearTimeout(openTimer);
-      const delay = nav.classList.contains('flyout-open') ? 0 : OPEN_DELAY;
-      openTimer = setTimeout(() => setOpen(li), delay);
-    });
-    li.querySelector('.globalnav-opener').addEventListener('click', () => {
-      const open = li.classList.contains('open');
-      if (isDesktop.matches) {
-        setOpen(open ? null : li);
-        if (!open) li.querySelector('.globalnav-flyout-link')?.focus();
-      }
-    });
-    // mobile: tapping an item with a flyout drills into its submenu
-    li.querySelector('.globalnav-link').addEventListener('click', (e) => {
-      if (isDesktop.matches) return;
-      e.preventDefault();
-      flyItems.forEach((item) => item.classList.toggle('open', item === li));
-      nav.classList.add('submenu-open');
-      li.querySelector('.globalnav-back').focus({ preventScroll: true });
-    });
-    li.querySelector('.globalnav-back').addEventListener('click', () => {
-      nav.classList.remove('submenu-open');
-      li.classList.remove('open');
-      li.querySelector('.globalnav-link').focus({ preventScroll: true });
-    });
+  // desktop: hover intent, delegated so there is one listener for all items
+  list.addEventListener('mouseover', (e) => {
+    if (!isDesktop.matches) return;
+    const li = e.target.closest('.globalnav-item');
+    if (!li || li === hoverItem) return;
+    hoverItem = li;
+    if (!li.classList.contains('has-flyout')) {
+      closeSoon();
+      return;
+    }
+    clearTimeout(closeTimer);
+    clearTimeout(openTimer);
+    const delay = nav.classList.contains('flyout-open') ? 0 : OPEN_DELAY;
+    openTimer = setTimeout(() => setOpen(li), delay);
   });
 
-  list.querySelectorAll('.globalnav-item:not(.has-flyout)').forEach((li) => {
-    li.addEventListener('mouseenter', () => {
+  list.addEventListener('click', (e) => {
+    const li = e.target.closest('.has-flyout');
+    if (!li) return;
+    if (e.target.closest('.globalnav-opener')) {
       if (!isDesktop.matches) return;
-      clearTimeout(openTimer);
-      closeTimer = setTimeout(closeAll, CLOSE_DELAY);
-    });
+      const open = li === openItem;
+      setOpen(open ? null : li);
+      if (!open) li.querySelector('.globalnav-flyout-link')?.focus();
+    } else if (e.target.closest('.globalnav-back')) {
+      nav.classList.remove('submenu-open');
+      setOpen(null);
+      li.querySelector('.globalnav-link').focus({ preventScroll: true });
+    } else if (e.target.closest('a.globalnav-link') && !isDesktop.matches) {
+      // mobile: tapping an item with a flyout drills into its submenu
+      e.preventDefault();
+      openItem?.classList.remove('open');
+      openItem = li;
+      li.classList.add('open');
+      nav.classList.add('submenu-open');
+      li.querySelector('.globalnav-back').focus({ preventScroll: true });
+    }
   });
 
   nav.addEventListener('mouseleave', () => {
-    if (!isDesktop.matches) return;
-    clearTimeout(openTimer);
-    closeTimer = setTimeout(closeAll, CLOSE_DELAY);
+    hoverItem = null;
+    if (isDesktop.matches) closeSoon();
   });
   nav.addEventListener('mouseenter', () => clearTimeout(closeTimer));
 
@@ -273,17 +290,21 @@ export default async function decorate(block) {
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (nav.classList.contains('flyout-open')) {
-      const opener = list.querySelector('.has-flyout.open .globalnav-opener');
+      const opener = openItem?.querySelector('.globalnav-opener');
       closeAll();
       opener?.focus();
     } else if (nav.classList.contains('menu-open')) {
       setMenu(false);
       menuButton.focus();
     }
-  });
+  }, { signal });
 
-  isDesktop.addEventListener('change', () => {
-    closeAll();
-    setMenu(false);
+  isDesktop.addEventListener('change', () => setMenu(false), { signal });
+
+  signal.addEventListener('abort', () => {
+    clearTimeout(openTimer);
+    clearTimeout(closeTimer);
+    document.body.classList.remove('globalnav-flyout-open');
+    document.body.style.overflowY = '';
   });
 }

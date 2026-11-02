@@ -615,17 +615,6 @@ main .section[data-margin="xxhuge"] {
     margin: var(--spacing-xxhuge) 0;
 }
 
-main .section.dark {
-  background-color: var(--color-surface-dark);
-  color: var(--color-text-on-dark);
-  margin: 0;
-  padding: var(--spacing-xbig) 0;
-}
-
-main .section.dark a:not(.button) {
-  color: var(--color-link-on-dark);
-}
-
 /* section metadata - styles - end */
 
 /* reveal-on-scroll effect (see scripts/scripts.js) */
@@ -635,7 +624,7 @@ main .section.dark a:not(.button) {
   transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
 }
 
-.reveal.revealed {
+.reveal.in-view {
   opacity: 1;
   transform: none;
 }

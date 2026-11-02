@@ -2,131 +2,33 @@
 
 ## Overview
 
-The Header block provides the main navigation and commerce functionality for the site. It includes responsive navigation with dropdown menus, authentication (sign in/sign out), wishlist access, mini cart with lazy loading, and product search with live results. The block handles both desktop and mobile layouts with hamburger menu support and manages various interactive panels.
+Global navigation: brand mark, top-level links with flyout panels, and utility icons (search, bag). Desktop shows hover flyouts that blur the page behind them; small screens get a full-screen menu with drill-in submenus.
 
 ## Integration
 
-### Block Configuration
+### Content
 
-No block configuration is read via `readBlockConfig()`. The header uses metadata tags for fragment paths.
+The nav fragment is loaded from `/content/nav` (local preview) and falls back to `/nav` (published sites). It has three sections:
 
-### URL Parameters
-
-No URL parameters are directly read by the header block.
-
-### Local Storage
-
-No localStorage keys are used directly by this block. Authentication and cart state are managed through cookies and the event bus.
-
-### Events
-
-#### Event Listeners
-
-- `events.on('cart/data', callback)` - Updates cart item counter and preloads mini cart fragment when cart data changes (eager loading enabled)
-- `events.on('authenticated', callback)` - Handled in `renderAuthCombine.js` and `renderAuthDropdown.js` for authentication state changes
-
-#### Event Emitters
-
-No events are directly emitted by this block. However, it triggers events indirectly through imported modules:
-- Mini cart triggers `publishShoppingCartViewEvent()` when opened
-- Search triggers product discovery events through the search dropin
+1. **Brand** – a link, usually wrapping the logo image.
+2. **Menu** – a list. Each item is a link, optionally followed by a nested list of groups. A group is an item whose leading text is the group title, followed by a list of links. The first group is shown in the large type style.
+3. **Tools** – links. `:search:` / `:cart:` style icon shorthand is expanded into icons, and icon-only links get an accessible label.
 
 ### Metadata
 
-The block reads the following metadata tags:
-
-- `nav` - Path to navigation fragment (default: `/nav`)
-- `wishlist` - Path to wishlist page (default: `/wishlist`)
-- `mini-cart` - Path to mini cart fragment (default: `/mini-cart`)
+None. The fragment paths are fixed so local preview and published sites both resolve.
 
 ## Behavior Patterns
 
-### Page Context Detection
+- **Desktop (≥ 834px):** hovering an item opens its flyout after a short delay; moving between items switches instantly. The bar grows to the flyout height and a curtain blurs the page. The chevron next to each link opens the flyout from the keyboard. `Escape`, clicking the curtain, or leaving the nav closes it.
+- **Mobile:** the menu button morphs into a close icon and opens a full-screen menu whose items fade in with a stagger. Tapping an item with a flyout slides in its submenu with a back button. Body scrolling is locked while the menu is open.
+- **Reduced motion:** all transitions are disabled.
 
-- **Desktop Mode**: Navigation with hover-triggered dropdowns, overlay background for open sections
-- **Mobile Mode**: Hamburger menu with click-triggered navigation, full-screen overlay when menu is open
-- **Checkout Pages**: Mini cart button is hidden on `/checkout` path
+### Lifecycle
 
-### Navigation Structure
-
-The header creates three main sections from the nav fragment:
-1. **Brand Section**: Logo and brand link
-2. **Navigation Sections**: Main menu with dropdown support and submenu structure
-3. **Tools Section**: Wishlist, mini cart, search, and authentication controls
-
-### User Interaction Flows
-
-#### Navigation
-1. **Desktop**: Users hover over navigation items to reveal dropdowns with overlay background
-2. **Mobile**: Users tap hamburger menu to open full navigation, tap categories to reveal submenus
-3. **Keyboard Navigation**: Full keyboard support with Tab, Enter, Space, and Escape keys
-4. **Focus Management**: Automatic focus handling and focus trap when dropdowns are open
-
-#### Wishlist
-1. Users click wishlist button to navigate to wishlist page
-2. Button is always visible in the tools section
-
-#### Mini Cart
-1. **Lazy Loading**: Mini cart fragment loads on first interaction or when cart contains items
-2. **Cart Counter**: Displays total quantity badge when items are in cart
-3. **Panel Toggle**: Click cart button to open/close mini cart panel
-4. **Auto-preload**: If cart data exists, mini cart fragment preloads automatically
-5. **Analytics**: Publishes shopping cart view event when opened
-
-#### Search
-1. **Lazy Loading**: Search functionality loads on first click
-2. **Live Search**: Shows results after typing 3 characters with 4 results displayed
-3. **Product Links**: Each result links to product detail page
-4. **View All**: Footer button links to full search results page
-5. **Form Submit**: Enter key navigates to search results page
-6. **Panel Close**: Click outside or Escape key closes search panel
-
-#### Authentication
-1. **Sign In Flow**: 
-   - Unauthenticated users see sign-in form in dropdown
-   - Modal option available via `renderAuthCombine` for mobile
-   - On successful login, page automatically reloads to ensure all components reflect the authenticated state
-2. **Sign Out Flow**:
-   - Authenticated users see account menu with logout button
-   - Logout revokes token asynchronously, then either redirects to a specific page or reloads the current page
-   - Special redirects on logout: checkout → cart, customer pages → login, order details → home
-   - All other pages simply reload to reflect the logged-out state
-3. **User Display**: Dropdown shows "Hi, {firstname}" for authenticated users
-
-#### Seller Assisted Buying Banner
-1. **Display Conditions**: Banner appears when user is authenticated and `auth_dropin_admin_session` cookie is present
-2. **Session Information**: Displays customer name (bold) and website name from store config
-3. **Store Config Caching**: Fetches store config from sessionStorage if available, otherwise calls API and caches result
-4. **Close Session**: Button revokes customer token and redirects to home page
-5. **Event Handling**: Automatically removes banner when authentication state changes or admin session cookie is cleared
-6. **Error Handling**: Gracefully handles JSON parse errors and API failures with console warnings
-
-### State Management
-
-#### Panel Loading States
-- Panels use `data-loaded`, `data-loading`, and `data-pending-toggle` attributes
-- Loading indicator shows via `aria-busy` attribute on buttons
-- Pending toggles queue up during loading and execute after completion
-
-#### Responsive Behavior
-- Media query breakpoint at 900px switches between desktop and mobile modes
-- Window resize resets navigation state and removes active classes
-- Overlay visibility managed based on navigation state and viewport size
-
-### Error Handling
-
-- **Fragment Loading**: If nav fragment fails to load, block handles gracefully
-- **Metadata Fallbacks**: Uses default paths when metadata is not specified
-- **Panel Loading Errors**: Caught in withLoadingState wrapper, sets loading state to false
-- **Image Rendering**: Delegates to AEM Assets image rendering with fallback support
-- **Search Errors**: Handled by product discovery dropin container
-- **Network Failures**: Authentication and cart operations handle network errors through dropins
+Window and media-query listeners are tied to an `AbortController`. Decorating a new header (for example when Document Authoring preview re-renders the page) aborts the previous one, clearing its timers, listeners, body classes and scroll lock.
 
 ## Files
 
-- `header.js` - Main block logic, navigation setup, and tool integrations
-- `header.css` - Styles for navigation, panels, and responsive layouts
-- `renderAuthCombine.js` - Authentication modal for mobile with sign in/sign up/reset password forms
-- `renderAuthDropdown.js` - Authentication dropdown for desktop with sign in form and user menu
-- `renderSellerAssistedBuyingBanner.js` - Banner component for seller assisted buying sessions with session management
-
+- `header.js` – builds the nav from the fragment and wires the interactions.
+- `header.css` – mobile-first styles; desktop layout from 834px.
