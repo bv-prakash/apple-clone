@@ -1,4 +1,4 @@
-import { loadFragment } from '../fragment/fragment.js';
+import { loadSiteFragment } from '../fragment/fragment.js';
 
 // matches the breakpoint in footer.css
 const isDesktop = window.matchMedia('(min-width: 834px)');
@@ -55,8 +55,7 @@ function buildDirectory(section) {
  * @param {Element} block The footer block element
  */
 export default async function decorate(block) {
-  // local preview serves content under /content; published sites serve it at the root
-  const fragment = await loadFragment('/content/footer') || await loadFragment('/footer');
+  const fragment = await loadSiteFragment('footer');
 
   block.textContent = '';
   if (!fragment) return;

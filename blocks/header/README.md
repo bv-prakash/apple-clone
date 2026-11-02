@@ -8,7 +8,7 @@ Global navigation: brand mark, top-level links with flyout panels, and utility i
 
 ### Content
 
-The nav fragment is loaded from `/content/nav` (local preview) and falls back to `/nav` (published sites). It has three sections:
+The nav fragment is loaded with `loadSiteFragment('nav')` from `blocks/fragment/fragment.js` (`/content/nav` in local preview, `/nav` on published sites). It has three sections:
 
 1. **Brand** – a link, usually wrapping the logo image.
 2. **Menu** – a list. Each item is a link, optionally followed by a nested list of groups. A group is an item whose leading text is the group title, followed by a list of links. The first group is shown in the large type style.
@@ -16,7 +16,7 @@ The nav fragment is loaded from `/content/nav` (local preview) and falls back to
 
 ### Metadata
 
-None. The fragment paths are fixed so local preview and published sites both resolve.
+None. The fragment path is derived from where the page is served, so local preview and published sites both resolve without an extra request.
 
 ## Behavior Patterns
 

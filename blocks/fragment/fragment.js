@@ -41,6 +41,18 @@ export async function loadFragment(path) {
   return null;
 }
 
+/**
+ * Loads a site-wide fragment such as the nav or footer.
+ * Local preview serves content under /content; published sites serve it at the root,
+ * so the prefix is only used when the current page itself lives under /content.
+ * @param {string} name Fragment name, e.g. 'nav'
+ * @returns {Promise<HTMLElement|null>} The root element of the fragment
+ */
+export function loadSiteFragment(name) {
+  const base = window.location.pathname.startsWith('/content/') ? '/content' : '';
+  return loadFragment(`${base}/${name}`);
+}
+
 export default async function decorate(block) {
   const link = block.querySelector('a');
   const path = link ? link.getAttribute('href') : block.textContent.trim();

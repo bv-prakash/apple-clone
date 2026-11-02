@@ -1,5 +1,5 @@
 import { decorateIcons } from '../../scripts/aem.js';
-import { loadFragment } from '../fragment/fragment.js';
+import { loadSiteFragment } from '../fragment/fragment.js';
 
 // matches the breakpoint in header.css
 const isDesktop = window.matchMedia('(min-width: 834px)');
@@ -83,8 +83,7 @@ function buildFlyout(item, index) {
  * @param {Element} block The header block element
  */
 export default async function decorate(block) {
-  // local preview serves content under /content; published sites serve it at the root
-  const fragment = await loadFragment('/content/nav') || await loadFragment('/nav');
+  const fragment = await loadSiteFragment('nav');
 
   block.textContent = '';
   if (!fragment) return;
